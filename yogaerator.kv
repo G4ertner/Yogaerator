@@ -1,0 +1,60 @@
+#: import Factory kivy.factory.Factory
+
+<SetupScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10, 10
+        spacing: 10
+
+        BoxLayout:
+            orientation: 'horizontal'
+
+            Label:
+                text: 'Workout time:'
+
+            TextInput:
+                id: workout_time
+                input_filter: 'int'
+                multiline: False
+
+        BoxLayout:
+            orientation: 'horizontal'
+
+            Label:
+                text: 'Yoga style:'
+
+            Spinner:
+                id: yoga_style
+                text: 'Hatha'
+                values: ('Hatha', 'Relax', 'Hip opening', 'Core', 'Kundalini', 'Yin', 'Custom')
+
+        Button:
+            text: 'Create workout'
+            on_release:
+                root.manager.get_screen('workout').get_yoga_workout(workout_time.text, yoga_style.text)
+                root.manager.current = 'workout'
+
+<WorkoutScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            orientation: 'horizontal'
+
+            Button:
+                text: 'Reload'
+                on_release: root.get_yoga_workout(workout_time.text, yoga_style.text)
+
+            Button:
+                text: 'Back'
+                on_release: root.manager.current = 'setup'
+
+        ScrollView:
+            Label:
+                text: root.yoga_poses
+                text_size: self.width - 20, None
+                size_hint_y: None
+                height: self.texture_size[1] + 20
+                markup: True
