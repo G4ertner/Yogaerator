@@ -27,11 +27,22 @@
                 id: yoga_style
                 text: 'Hatha'
                 values: ('Hatha', 'Relax', 'Hip opening', 'Core', 'Kundalini', 'Yin', 'Custom')
+                on_text:
+                    custom_yoga_style.opacity = 1 if self.text == 'Custom' else 0
+                    custom_yoga_style.disabled = False if self.text == 'Custom' else True
+
+            TextInput:
+                id: custom_yoga_style
+                multiline: False
+                opacity: 0
+                disabled: True
+
 
         Button:
             text: 'Create workout'
             on_release:
-                root.manager.get_screen('workout').get_yoga_workout(workout_time.text, yoga_style.text)
+                selected_yoga_style = custom_yoga_style.text if yoga_style.text == 'Custom' else yoga_style.text
+                root.manager.get_screen('workout').get_yoga_workout(workout_time.text, selected_yoga_style)
                 root.manager.current = 'workout'
 
 <WorkoutScreen>:
@@ -45,7 +56,8 @@
 
             Button:
                 text: 'Reload'
-                on_release: root.get_yoga_workout(workout_time.text, yoga_style.text)
+                on_release: root.get_yoga_workout(root.workout_time, root.yoga_style)
+
 
             Button:
                 text: 'Back'

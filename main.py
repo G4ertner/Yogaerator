@@ -22,6 +22,9 @@ class WorkoutScreen(Screen):
         print("Request failed")
 
     def get_yoga_workout(self, workout_time, yoga_style):
+        self.workout_time = workout_time
+        self.yoga_style = yoga_style
+
         print(f'workout time: {workout_time}. Yoga style: {yoga_style}')
         prompt = {"workout time in min": int(workout_time), "yoga style": yoga_style}
 
