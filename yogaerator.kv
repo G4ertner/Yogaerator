@@ -1,4 +1,9 @@
 #: import Factory kivy.factory.Factory
+<Label>
+    font_size: 25
+
+<MyOption@SpinnerOption>:
+    font_size: 18
 
 <SetupScreen>:
     BoxLayout:
@@ -26,8 +31,10 @@
             FloatLayout:
                 size_hint_y: None
                 height: '40dp'
-                width: 320  # Set the desired width for both TextInput and Spinner
-                size_hint_x: None
+                width: 160  # Set the desired width for both TextInput and Spinner
+                size_hint_x: 1
+
+
 
                 Spinner:
                     id: yoga_style
@@ -38,7 +45,9 @@
                     size_hint_y: None
                     height: '160dp'
                     size_hint_x: 1
-                    pos_hint: {'top': 4.3, 'x': -0.1}  # Position the Spinner at the top of the FloatLayout
+                    option_cls: "MyOption"
+                    font_size: 20
+                    pos_hint: {'top': 4.3, 'x': 0}  # Position the Spinner at the top of the FloatLayout
 
 
                 TextInput:
@@ -50,7 +59,7 @@
                     size_hint_y: None
                     height: '160dp'
                     size_hint_x: 1
-                    pos_hint: {'top': 4.3, 'x': -0.1}  # Position the TextInput at the top of the FloatLayout
+                    pos_hint: {'top': 4.3, 'x': 0}  # Position the TextInput at the top of the FloatLayout
 
 
         Button:
@@ -84,4 +93,5 @@
                 text_size: self.width - 20, None
                 size_hint_y: None
                 height: self.texture_size[1] + 20
+                font_size: 20
                 markup: True

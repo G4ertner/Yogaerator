@@ -30,7 +30,7 @@ class WorkoutScreen(Screen):
 
 
         # load the prime prompt
-        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time and yoga style. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only. There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of {yoga_style} for a {workout_time} minute workout.'
+        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time of {workout_time} minutes and yoga style “{yoga_style}”. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only. There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of “{yoga_style}” for a {workout_time} minute workout.'
         print(f'prompt for GPT: {prime_prompt + str(prompt)}')
 
 
