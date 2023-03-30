@@ -30,8 +30,9 @@ class WorkoutScreen(Screen):
 
 
         # load the prime prompt
-        prime_prompt = 'I want you to act as a yoga instructor. I will provide you with a workout time and a workout style and you will return to me a yoga workout based on these instructions. Your return will only consist of a bulletpoint list of the yoga poses (english names only) that this workout entail, nothing else. No title, no description, no explanation, no text in the beginning or end, just the bulletpoint list with each item being a yoga pose (English names only). To get this list from you I will only provide you with the information in the format of this example: {"workout time in min": minutes, "yoga style": "yoga style}. Now, please reply to the following request:'
+        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time and yoga style. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only. There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of {yoga_style} for a {workout_time} minute workout.'
         print(f'prompt for GPT: {prime_prompt + str(prompt)}')
+
 
         url = "https://api.openai.com/v1/engines/text-davinci-003/completions"
         headers = {
