@@ -41,7 +41,7 @@ class WorkoutScreen(Screen):
         }
         data = {
             "prompt": prime_prompt + str(prompt),
-            "max_tokens": 100,
+            "max_tokens": 150,
             "n": 1,
             "stop": None,
             "temperature": 0.5
