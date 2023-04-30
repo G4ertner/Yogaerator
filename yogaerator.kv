@@ -1,9 +1,9 @@
 #: import Factory kivy.factory.Factory
 <Label>
-    font_size: 25
+    font_size: sp(25)
 
 <MyOption@SpinnerOption>:
-    font_size: 18
+    font_size: sp(18)
 
 <SetupScreen>:
     BoxLayout:
@@ -39,14 +39,14 @@
                 Spinner:
                     id: yoga_style
                     text: 'Hatha'
-                    values: ('Hatha', 'Relax', 'Flow', 'Gentle Flow', 'Hip opening flow', 'Core', 'Kundalini', 'Yin', 'Power', 'Meditation', 'Custom')
+                    values: ('Hatha', 'Gentle Hatha', 'Relaxation', 'Flow', 'Gentle Flow', 'Hip Opening Flow', 'Core Flow', 'Kundalini', 'Yin', 'Power', 'Yoga + Mobility', 'Yoga + Meditation', 'Therapeutic', 'Custom')
                     opacity: 0 if yoga_style.text == 'Custom' else 1
                     on_text: custom_yoga_style.opacity = 1 if self.text == 'Custom' else 0
                     size_hint_y: None
                     height: '160dp'
                     size_hint_x: 1
                     option_cls: "MyOption"
-                    font_size: 20
+                    font_size: sp(20)
                     pos_hint: {'top': 4.3, 'x': 0}  # Position the Spinner at the top of the FloatLayout
 
 
@@ -93,5 +93,5 @@
                 text_size: self.width - 20, None
                 size_hint_y: None
                 height: self.texture_size[1] + 20
-                font_size: 20
+                font_size: sp(20)
                 markup: True

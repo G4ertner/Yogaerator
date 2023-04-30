@@ -15,7 +15,8 @@ class WorkoutScreen(Screen):
     yoga_poses = StringProperty("")
 
     def on_request_success(self, request, result):
-        poses = result['choices'][0]['text'].strip()
+        poses = result['choices'][0]['message']['content'].strip()
+        print(poses)
         self.yoga_poses = poses
 
     def on_request_failure(self, request, result):
@@ -30,18 +31,19 @@ class WorkoutScreen(Screen):
 
 
         # load the prime prompt
-        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time of {workout_time} minutes and yoga style “{yoga_style}”. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only. There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of “{yoga_style}” for a {workout_time} minute workout.'
+        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time of {workout_time} minutes and yoga style “{yoga_style}”. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only (no sanskrit names, not even in brackets). There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of “{yoga_style}” for a {workout_time} minute workout.'
         print(f'prompt for GPT: {prime_prompt + str(prompt)}')
 
 
-        url = "https://api.openai.com/v1/engines/text-davinci-003/completions"
+        url = "https://api.openai.com/v1/chat/completions"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
         data = {
-            "prompt": prime_prompt + str(prompt),
-            "max_tokens": 150,
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": prime_prompt + str(prompt)}],
+            "max_tokens": 300,
             "n": 1,
             "stop": None,
             "temperature": 0.5
