@@ -5,12 +5,18 @@
 <MyOption@SpinnerOption>:
     font_size: sp(18)
 
+
+######################################
+### Setup Screen
+#####################################
+
 <SetupScreen>:
     BoxLayout:
         orientation: 'vertical'
         padding: 10, 10
         spacing: 10
 
+        # workout time
         BoxLayout:
             orientation: 'horizontal'
 
@@ -22,6 +28,7 @@
                 input_filter: 'int'
                 multiline: False
 
+        # Yoga style
         BoxLayout:
             orientation: 'horizontal'
 
@@ -61,37 +68,82 @@
                     size_hint_x: 1
                     pos_hint: {'top': 4.3, 'x': 0}  # Position the TextInput at the top of the FloatLayout
 
-
+        # create button
         Button:
             text: 'Create workout'
             on_release:
                 root.manager.get_screen('workout').get_yoga_workout(workout_time.text, custom_yoga_style.text if yoga_style.text == 'Custom' else yoga_style.text)
                 root.manager.current = 'workout'
 
-<WorkoutScreen>:
+####################################################################
+### Workout Overview Screen
+####################################################################
+
+<WorkoutOverview>:
     BoxLayout:
         orientation: 'vertical'
 
+        # Top Bar
         BoxLayout:
             size_hint_y: None
             height: '40dp'
             orientation: 'horizontal'
 
+            # Reload Button
             Button:
                 text: 'Reload'
                 on_release: root.get_yoga_workout(root.workout_time, root.yoga_style if root.yoga_style != 'Custom' else custom_yoga_style.text)
 
-
-
+            # Back Button
             Button:
                 text: 'Back'
                 on_release: root.manager.current = 'setup'
 
+        # Workout display screen
         ScrollView:
-            Label:
-                text: root.yoga_poses
-                text_size: self.width - 20, None
+            BoxLayout:
+                id: container
+                orientation: 'vertical'
+                #size_hint: 1, 1
                 size_hint_y: None
-                height: self.texture_size[1] + 20
-                font_size: sp(20)
-                markup: True
+                height: self.minimum_height
+
+                # Title
+                Label:
+                    text: root.yoga_title
+                    text_size: self.width - 20, None
+                    size_hint_y: None
+                    height: self.texture_size[1] + 20
+                    font_size: sp(30)
+                    markup: True
+                    halign: 'center'
+                    #pos_hint: {'center_y': 0.5}
+
+                # Description
+                Label:
+                    text: root.yoga_description
+                    text_size: self.width - 20, None
+                    size_hint_y: None
+                    height: self.texture_size[1] + 20
+                    font_size: sp(20)
+                    markup: True
+
+                # Poses overview
+                Label:
+                    text: root.yoga_poses
+                    text_size: self.width - 20, None
+                    size_hint_y: None
+                    height: self.texture_size[1] + 20
+                    font_size: sp(20)
+                    markup: True
+
+        # Bottom Bar
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            orientation: 'horizontal'
+
+            # Start Workout button
+            Button:
+                text: 'Start Workout'
+                on_release:

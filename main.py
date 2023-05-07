@@ -8,16 +8,30 @@ from creds import openai_key
 # Remember to set your OpenAI API key
 api_key = openai_key
 
+# setup workout variables
+title = ''
+description = ''
+workout = {}
+workout_poses = ''
+
 class SetupScreen(Screen):
     pass
 
-class WorkoutScreen(Screen):
+class WorkoutOverview(Screen):
+    yoga_title = StringProperty("")
+    yoga_description = StringProperty("")
     yoga_poses = StringProperty("")
 
+
+
     def on_request_success(self, request, result):
-        poses = result['choices'][0]['message']['content'].strip()
-        print(poses)
-        self.yoga_poses = poses
+        res = result['choices'][0]['message']['content'].strip()
+        print(res)
+        response = json.loads(res)
+        self.yoga_title = response['title']
+        self.yoga_description = response['description']
+        self.yoga_poses = "Poses:\n- " + '\n- '.join([d['pose'] for d in response['poses']])
+
 
     def on_request_failure(self, request, result):
         print("Request failed")
@@ -27,12 +41,71 @@ class WorkoutScreen(Screen):
         self.yoga_style = yoga_style
 
         print(f'workout time: {workout_time}. Yoga style: {yoga_style}')
-        prompt = {"workout time in min": int(workout_time), "yoga style": yoga_style}
+        prompt = f"Yoga style: {yoga_style}; Workout time: {int(workout_time)}"
 
 
-        # load the prime prompt
-        prime_prompt = f'As a knowledgeable yoga instructor, I require you to create a tailored yoga workout based on the given workout time of {workout_time} minutes and yoga style “{yoga_style}”. You will provide a well-structured sequence of yoga poses in a bullet point list fitting the workout time. You will ensure that each pose is mentioned by its English name only (no sanskrit names, not even in brackets). There should be no additional information, such as titles, descriptions, explanations, or any extra text before or after the list. The list should consist solely of yoga poses. Now, please create a suitable yoga workout sequence in the style of “{yoga_style}” for a {workout_time} minute workout.'
-        print(f'prompt for GPT: {prime_prompt + str(prompt)}')
+        # load the prompts
+        system_prompt = f'''
+        As a knowledgeable yoga instructor, will you create a tailored yoga workout based on the given workout time and yoga style provided to you by the user.
+        You will provide a well-structured sequence of yoga poses fitting the workout time. You will ensure that each pose is mentioned by its English name only (no Sanskrit names, not even in brackets or parentheses).
+        You will provide your answer in a JSON format containing the following: First, a title for the workout, then a short description/introduction of the workout (2-3 sentences), and then for each pose the pose name, amounts of breaths in this pose, and seconds on how long this pose lasts.
+        '''
+        first_user_prompt = '''
+        Yoga style: Relaxation; Workout time: 14 minutes
+        '''
+        first_assistant_prompt = '''
+        {
+        "title": "15-Minute Relaxation Yoga Sequence",
+        "description": "This 15-minute relaxation yoga sequence is designed to help you release tension and restore a sense of calmness in both your body and mind. The gentle, slow-paced poses will encourage deep relaxation and help you feel refreshed after completing the practice.",
+        "poses": [
+        {
+        "pose": "Child's Pose",
+        "breaths": 6,
+        "seconds": 60
+        },
+        {
+        "pose": "Cat-Cow",
+        "breaths": 8,
+        "seconds": 80
+        },
+        {
+        "pose": "Seated Forward Bend",
+        "breaths": 6,
+        "seconds": 60
+        },
+        {
+        "pose": "Butterfly Pose",
+        "breaths": 5,
+        "seconds": 50
+        },
+        {
+        "pose": "Supported Fish Pose",
+        "breaths": 6,
+        "seconds": 60
+        },
+        {
+        "pose": "Happy Baby Pose",
+        "breaths": 6,
+        "seconds": 60
+        },
+        {
+        "pose": "Reclined Spinal Twist",
+        "breaths": 6,
+        "seconds": 60
+        },
+        {
+        "pose": "Legs Up the Wall",
+        "breaths": 10,
+        "seconds": 100
+        },
+        {
+        "pose": "Corpse Pose",
+        "breaths": 12,
+        "seconds": 120
+        }
+        ]
+        }
+        '''
 
 
         url = "https://api.openai.com/v1/chat/completions"
@@ -42,8 +115,12 @@ class WorkoutScreen(Screen):
         }
         data = {
             "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": prime_prompt + str(prompt)}],
-            "max_tokens": 300,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": first_user_prompt},
+                {"role": "user", "content": first_assistant_prompt},
+                {"role": "user", "content": prompt}],
+            "max_tokens": 2048,
             "n": 1,
             "stop": None,
             "temperature": 0.5
@@ -64,7 +141,7 @@ class YogaeratorApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(SetupScreen(name='setup'))
-        sm.add_widget(WorkoutScreen(name='workout'))
+        sm.add_widget(WorkoutOverview(name='workout'))
         return sm
 
 if __name__ == '__main__':
