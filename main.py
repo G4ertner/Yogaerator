@@ -4,33 +4,100 @@ from kivy.properties import StringProperty
 import json
 from kivy.network.urlrequest import UrlRequest
 from creds import openai_key
+from kivy.clock import Clock
+from functools import partial
+import kivy.properties as properties
 
 # Remember to set your OpenAI API key
 api_key = openai_key
 
 # setup workout variables
-title = ''
-description = ''
-workout = {}
-workout_poses = ''
+# make response global to be accessible from other functions
+global response
+
+######################################
+### Setup Screen
+#####################################
 
 class SetupScreen(Screen):
     pass
+
+####################################################################
+### Workout Overview Screen
+####################################################################
 
 class WorkoutOverview(Screen):
     yoga_title = StringProperty("")
     yoga_description = StringProperty("")
     yoga_poses = StringProperty("")
-
-
+    workout = properties.ListProperty()
 
     def on_request_success(self, request, result):
-        res = result['choices'][0]['message']['content'].strip()
+        # strip the content from the response
+        #res = result['choices'][0]['message']['content'].strip()
+        res='''{
+    "title": "10-Minute Dog Yoga Sequence",
+    "description": "This 10-minute dog yoga sequence is designed to help your furry friend stretch, relax and bond with you. The poses are gentle and easy to follow, and will help your dog release tension and stress.",
+    "poses": [
+        {
+            "pose": "Downward-Facing Dog",
+            "breaths": 3,
+            "seconds": 30
+        },
+        {
+            "pose": "Upward-Facing Dog",
+            "breaths": 3,
+            "seconds": 30
+        },
+        {
+            "pose": "Puppy Pose",
+            "breaths": 4,
+            "seconds": 40
+        },
+        {
+            "pose": "Low Lunge",
+            "breaths": 4,
+            "seconds": 40
+        },
+        {
+            "pose": "Warrior I",
+            "breaths": 3,
+            "seconds": 30
+        },
+        {
+            "pose": "Warrior II",
+            "breaths": 3,
+            "seconds": 30
+        },
+        {
+            "pose": "Triangle Pose",
+            "breaths": 3,
+            "seconds": 30
+        },
+        {
+            "pose": "Tree Pose",
+            "breaths": 4,
+            "seconds": 40
+        },
+        {
+            "pose": "Corpse Pose",
+            "breaths": 3,
+            "seconds": 30
+        }
+    ]
+}'''
         print(res)
+
+        # turn response into json object
         response = json.loads(res)
+
+
+
+        # post instructions on overview screen
         self.yoga_title = response['title']
         self.yoga_description = response['description']
         self.yoga_poses = "Poses:\n- " + '\n- '.join([d['pose'] for d in response['poses']])
+        self.workout = response['poses']
 
 
     def on_request_failure(self, request, result):
@@ -41,7 +108,7 @@ class WorkoutOverview(Screen):
         self.yoga_style = yoga_style
 
         print(f'workout time: {workout_time}. Yoga style: {yoga_style}')
-        prompt = f"Yoga style: {yoga_style}; Workout time: {int(workout_time)}"
+        prompt = f"Yoga style: {yoga_style}; Workout time: {int(workout_time)} minutes."
 
 
         # load the prompts
@@ -126,22 +193,86 @@ class WorkoutOverview(Screen):
             "temperature": 0.5
         }
 
-        request = UrlRequest(
-            url,
-            req_body=json.dumps(data),
-            req_headers=headers,
-            on_success=self.on_request_success,
-            on_failure=self.on_request_failure,
-            on_error=self.on_request_failure,
-            method="POST"
-        )
+#        request = UrlRequest(
+#            url,
+#            req_body=json.dumps(data),
+#            req_headers=headers,
+#            on_success=self.on_request_success,
+#            on_failure=self.on_request_failure,
+#            on_error=self.on_request_failure,
+#            method="POST"
+#        )
 
+        self.on_request_success(0,0)
+##########################################
+### Workout Screen
+##########################################
+
+class Workout(Screen):
+    yoga_pose = StringProperty("Downward Dog")
+    breath_count = StringProperty("0 breaths")
+    gradient = properties.NumericProperty()
+    count = 0
+
+    def update_pose(self, poses, pose_index=0, breath_index=None, interval_on=False):
+        if pose_index < len(poses):
+            pose = poses[pose_index]
+
+            # Update yoga pose if it's the first breath
+            if breath_index is None:
+                self.yoga_pose = pose['pose']
+                breath_index = pose['breaths']
+
+            # Calculate length of breath
+            breath_length = int(pose['seconds'] / pose['breaths'])
+            breath_middle = breath_length/2
+            breath_interval = (breath_length/2) /100
+            print(f'breath no: {breath_index}, breath length in seconds: {breath_length}, breath middle: {breath_middle}, breath interval {breath_interval}')
+
+            # Update breaths (counting down)
+            self.breath_count = f"{breath_index} breath"
+            breath_index -= 1
+            self.count = 0
+            self.gradient = 0
+
+            # update gradient
+            if not interval_on:
+                interval_on = True
+                Clock.schedule_interval(partial(self.upgrade_gradient, breath_middle), breath_interval)
+
+            # If all breaths are completed for the current pose, move to the next pose
+            if breath_index < 0:
+                breath_index = None
+                pose_index += 1
+
+            # Schedule the update_pose function to be called after a pause
+            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index, interval_on), breath_length)
+
+    def upgrade_gradient(self, middle, interval):
+        print(f'gradient is {self.gradient}, count is {self.count}. middle is {middle}')
+        if self.count <= middle:
+            self.gradient += 0.01
+        elif self.count > middle:
+            self.gradient -= 0.01
+        self.count += interval
+
+
+    def callback(self, dt):
+        pass
+
+
+
+
+####################################
+### Screen Manager
+####################################
 
 class YogaeratorApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(SetupScreen(name='setup'))
-        sm.add_widget(WorkoutOverview(name='workout'))
+        sm.add_widget(WorkoutOverview(name='overview'))
+        sm.add_widget(Workout(name='workout'))
         return sm
 
 if __name__ == '__main__':

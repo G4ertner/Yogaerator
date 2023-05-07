@@ -1,4 +1,5 @@
 #: import Factory kivy.factory.Factory
+#:import rgba kivy.utils.rgba
 <Label>
     font_size: sp(25)
 
@@ -41,8 +42,6 @@
                 width: 160  # Set the desired width for both TextInput and Spinner
                 size_hint_x: 1
 
-
-
                 Spinner:
                     id: yoga_style
                     text: 'Hatha'
@@ -72,8 +71,8 @@
         Button:
             text: 'Create workout'
             on_release:
-                root.manager.get_screen('workout').get_yoga_workout(workout_time.text, custom_yoga_style.text if yoga_style.text == 'Custom' else yoga_style.text)
-                root.manager.current = 'workout'
+                root.manager.get_screen('overview').get_yoga_workout(workout_time.text, custom_yoga_style.text if yoga_style.text == 'Custom' else yoga_style.text)
+                root.manager.current = 'overview'
 
 ####################################################################
 ### Workout Overview Screen
@@ -89,15 +88,15 @@
             height: '40dp'
             orientation: 'horizontal'
 
-            # Reload Button
-            Button:
-                text: 'Reload'
-                on_release: root.get_yoga_workout(root.workout_time, root.yoga_style if root.yoga_style != 'Custom' else custom_yoga_style.text)
-
             # Back Button
             Button:
                 text: 'Back'
                 on_release: root.manager.current = 'setup'
+
+            # Reload Button
+            Button:
+                text: 'Reload'
+                on_release: root.get_yoga_workout(root.workout_time, root.yoga_style if root.yoga_style != 'Custom' else custom_yoga_style.text)
 
         # Workout display screen
         ScrollView:
@@ -147,3 +146,46 @@
             Button:
                 text: 'Start Workout'
                 on_release:
+                    root.manager.current = 'workout'
+                    root.manager.get_screen('workout').update_pose(root.workout)
+
+##########################################
+### Workout Screen
+##########################################
+
+<Workout>:
+
+    canvas.before:
+        Color:
+            rgba: 0.137, 0.69, 0.529, root.gradient  # You can use any color here
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        # Top Bar
+        BoxLayout:
+            size_hint_y: None
+            height: '40dp'
+            orientation: 'horizontal'
+
+            # Back Button
+            Button:
+                text: 'Back'
+                on_release: root.manager.current = 'overview'
+
+    # Poses display
+    FloatLayout:
+    Label:
+        text: root.yoga_pose
+        font_size: sp(24)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.55}
+        halign: 'center'
+
+    Label:
+        text: root.breath_count
+        font_size: sp(18)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.45}
+        halign: 'center'
