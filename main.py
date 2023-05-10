@@ -222,7 +222,6 @@ class WorkoutOverview(Screen):
             accordion.add_widget(accordion_item)
 
 
-
         # define the size of the accordionItems
         accordion.height = len(accordion.children) * 60  # Set the height
 

@@ -92,16 +92,18 @@
             height: '40dp'
             orientation: 'horizontal'
 
-
-
             # Back Button
             Button:
                 text: 'Back'
+                #background_normal: '' # disable standard background shading
+                background_color: (0.322, 0.749, 0.561) # set background color
                 on_release: root.manager.current = 'setup'
 
             # Reload Button
             Button:
                 text: 'Reload'
+                #background_normal: '' # disable standard background shading
+                background_color: (0.322, 0.749, 0.561) # set background color
                 on_release: root.get_yoga_workout(root.workout_time, root.yoga_style if root.yoga_style != 'Custom' else custom_yoga_style.text)
 
 
@@ -148,12 +150,15 @@
         # Bottom Bar
         BoxLayout:
             size_hint_y: None
-            height: '40dp'
+            height: '60dp'
             orientation: 'horizontal'
 
             # Start Workout button
             Button:
                 text: 'Start Workout'
+                #
+                background_normal: '' # disable standard background shading
+                background_color: (0.322, 0.749, 0.561) # set background color
                 on_release:
                     root.manager.current = 'workout'
                     root.manager.get_screen('workout').update_pose(root.workout)
