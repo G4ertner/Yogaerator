@@ -1,5 +1,9 @@
 #: import Factory kivy.factory.Factory
-#:import rgba kivy.utils.rgba
+#: import rgba kivy.utils.rgba
+#: import Accordion kivy.uix.accordion
+#: import AccordionItem kivy.uix.accordion
+
+
 <Label>
     font_size: sp(25)
 
@@ -88,6 +92,8 @@
             height: '40dp'
             orientation: 'horizontal'
 
+
+
             # Back Button
             Button:
                 text: 'Back'
@@ -98,12 +104,13 @@
                 text: 'Reload'
                 on_release: root.get_yoga_workout(root.workout_time, root.yoga_style if root.yoga_style != 'Custom' else custom_yoga_style.text)
 
+
         # Workout display screen
         ScrollView:
             BoxLayout:
                 id: container
                 orientation: 'vertical'
-                #size_hint: 1, 1
+                size_hint: 1, 1
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -129,12 +136,14 @@
 
                 # Poses overview
                 Label:
-                    text: root.yoga_poses
+                    text: "Poses:"
                     text_size: self.width - 20, None
                     size_hint_y: None
                     height: self.texture_size[1] + 20
-                    font_size: sp(20)
+                    font_size: sp(30)
                     markup: True
+                    halign: 'center'
+
 
         # Bottom Bar
         BoxLayout:

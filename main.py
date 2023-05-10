@@ -7,6 +7,9 @@ from creds import openai_key
 from kivy.clock import Clock
 from functools import partial
 import kivy.properties as properties
+from kivy.uix.accordion import Accordion, AccordionItem
+from kivy.uix.label import Label
+from kivy.core.window import Window
 
 # Remember to set your OpenAI API key
 api_key = openai_key
@@ -91,14 +94,13 @@ class WorkoutOverview(Screen):
         # turn response into json object
         response = json.loads(res)
 
-
-
         # post instructions on overview screen
         self.yoga_title = response['title']
         self.yoga_description = response['description']
         self.yoga_poses = "Poses:\n- " + '\n- '.join([d['pose'] for d in response['poses']])
         self.workout = response['poses']
 
+        self.build_accordion(response['poses'])
 
     def on_request_failure(self, request, result):
         print("Request failed")
@@ -204,6 +206,36 @@ class WorkoutOverview(Screen):
 #        )
 
         self.on_request_success(0,0)
+
+    def build_accordion(self, data):
+        #accordion = Accordion()
+        accordion = Accordion(orientation='vertical',  size_hint_y=None)
+
+        for item in data:
+            accordion_item = AccordionItem(title=item['pose'])
+            content_label = Label(
+                text=f"Breaths: {item['breaths']}\nSeconds: {item['seconds']}",
+
+            )
+            content_label.height = content_label.texture_size[1] + 20
+            accordion_item.add_widget(content_label)
+            accordion.add_widget(accordion_item)
+
+
+
+        # define the size of the accordionItems
+        accordion.height = len(accordion.children) * 60  # Set the height
+
+        # Add a dummy AccordionItem at the end to have the visual of a fully closed accordion
+        item_dummy = AccordionItem(title='')
+        accordion.add_widget(item_dummy)
+
+        overview_screen = self.manager.get_screen('overview')
+        overview_screen.ids.container.add_widget(accordion)
+
+        # Set the dummy item as the selected one
+        accordion.select(item_dummy)
+
 ##########################################
 ### Workout Screen
 ##########################################
@@ -260,6 +292,8 @@ class Workout(Screen):
     def callback(self, dt):
         pass
 
+# TODO: Add Pause button to workout screen
+# TODO: on overview, make poses buttons that open pop-up window. In window, explain pose, have 'start from here' button
 
 
 
