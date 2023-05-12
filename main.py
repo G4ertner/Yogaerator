@@ -253,6 +253,12 @@ class Workout(Screen):
 
     def update_pose(self, poses, pose_index=0, breath_index=None, *args):
 
+        # attach variables to class to reuse them
+        self.poses = poses
+        self.pose_index = pose_index
+        self.breath_index = breath_index
+
+        # if pose changes, grab the new pose from the workout plan
         if pose_index < len(poses):
             pose = poses[pose_index]
 
@@ -271,7 +277,6 @@ class Workout(Screen):
             self.breath_count = f"{breath_index} breath"
             breath_index -= 1
 
-
             # update gradient
             self.animate_color(breath_middle, poses, pose_index, breath_index)
 
@@ -279,7 +284,7 @@ class Workout(Screen):
     def animate_color(self, duration, poses, pose_index, breath_index, *args):
 
         # start the animiation
-        anim = Animation(bg_color=[0.137, 0.69, 0.529, 1], t='in_out_quad', duration=duration) + Animation(bg_color=[0.137, 0.69, 0.529, 0], t='in_out_quad', duration=duration)
+        self.anim = Animation(bg_color=[0.137, 0.69, 0.529, 1], t='in_out_quad', duration=duration) + Animation(bg_color=[0.137, 0.69, 0.529, 0], t='in_out_quad', duration=duration)
 
         # If all breaths are completed for the current pose, move to the next pose
         if breath_index < 0:
@@ -287,9 +292,28 @@ class Workout(Screen):
             pose_index += 1
 
         # update the breath count / yoga pose when animation is done
-        anim.bind(on_complete=partial(self.update_pose, poses, pose_index, breath_index))
+        self.anim.bind(on_complete=partial(self.update_pose, poses, pose_index, breath_index))
 
-        anim.start(self)
+        self.anim.start(self)
+
+    def on_pause(self):
+
+        # When Pause is activated
+        if not self.pause:
+            self.pause = True
+            print('pause is activated')
+
+            # cancel animation
+            self.anim.cancel_all(self)
+
+
+        # When pause is deactivated
+        else:
+            self.pause = False
+            print('pause is canceled')
+
+            # return to workout
+            return self.update_pose(self.poses, self.pose_index, self.breath_index)
 
 
 # TODO: Add Pause button to workout screen
