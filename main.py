@@ -38,6 +38,8 @@ class WorkoutOverview(Screen):
     def on_request_success(self, request, result):
         # strip the content from the response
         #res = result['choices'][0]['message']['content'].strip()
+
+        # debug option
         res='''{
     "title": "10-Minute Dog Yoga Sequence",
     "description": "This 10-minute dog yoga sequence is designed to help your furry friend stretch, relax and bond with you. The poses are gentle and easy to follow, and will help your dog release tension and stress.",
@@ -45,17 +47,17 @@ class WorkoutOverview(Screen):
         {
             "pose": "Downward-Facing Dog",
             "breaths": 3,
-            "seconds": 30
+            "seconds": 20
         },
         {
             "pose": "Upward-Facing Dog",
             "breaths": 3,
-            "seconds": 30
+            "seconds": 10
         },
         {
             "pose": "Puppy Pose",
             "breaths": 4,
-            "seconds": 40
+            "seconds": 60
         },
         {
             "pose": "Low Lunge",
@@ -195,17 +197,20 @@ class WorkoutOverview(Screen):
             "temperature": 0.5
         }
 
-#        request = UrlRequest(
-#            url,
-#            req_body=json.dumps(data),
-#            req_headers=headers,
-#            on_success=self.on_request_success,
-#            on_failure=self.on_request_failure,
-#            on_error=self.on_request_failure,
-#            method="POST"
-#        )
+        # Debug option
+        return self.on_request_success(0,0)
 
-        self.on_request_success(0,0)
+        request = UrlRequest(
+            url,
+            req_body=json.dumps(data),
+            req_headers=headers,
+            on_success=self.on_request_success,
+            on_failure=self.on_request_failure,
+            on_error=self.on_request_failure,
+            method="POST"
+        )
+
+
 
     def build_accordion(self, data):
         #accordion = Accordion()
@@ -240,12 +245,12 @@ class WorkoutOverview(Screen):
 ##########################################
 
 class Workout(Screen):
-    yoga_pose = StringProperty("Downward Dog")
-    breath_count = StringProperty("0 breaths")
+    breath_count = StringProperty('')
+    yoga_pose = StringProperty('')
     gradient = properties.NumericProperty()
     count = 0
 
-    def update_pose(self, poses, pose_index=0, breath_index=None, interval_on=False):
+    def update_pose(self, poses, pose_index=0, breath_index=None):
         if pose_index < len(poses):
             pose = poses[pose_index]
 
@@ -255,21 +260,19 @@ class Workout(Screen):
                 breath_index = pose['breaths']
 
             # Calculate length of breath
-            breath_length = int(pose['seconds'] / pose['breaths'])
-            breath_middle = breath_length/2
-            breath_interval = (breath_length/2) /100
+            breath_length = int((pose['seconds'] / pose['breaths']) * 100) # convert to integer (hundredths of a second)
+            breath_middle = breath_length // 2
+            breath_interval = breath_middle // 100
             print(f'breath no: {breath_index}, breath length in seconds: {breath_length}, breath middle: {breath_middle}, breath interval {breath_interval}')
 
             # Update breaths (counting down)
             self.breath_count = f"{breath_index} breath"
             breath_index -= 1
-            self.count = 0
+            #self.count = 0
             self.gradient = 0
 
             # update gradient
-            if not interval_on:
-                interval_on = True
-                Clock.schedule_interval(partial(self.upgrade_gradient, breath_middle), breath_interval)
+            self.upgrade_gradient(breath_middle, breath_length, breath_interval)
 
             # If all breaths are completed for the current pose, move to the next pose
             if breath_index < 0:
@@ -277,15 +280,34 @@ class Workout(Screen):
                 pose_index += 1
 
             # Schedule the update_pose function to be called after a pause
-            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index, interval_on), breath_length)
+            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index), breath_length/100)
 
-    def upgrade_gradient(self, middle, interval):
-        print(f'gradient is {self.gradient}, count is {self.count}. middle is {middle}')
-        if self.count <= middle:
-            self.gradient += 0.01
-        elif self.count > middle:
-            self.gradient -= 0.01
-        self.count += interval
+
+    def upgrade_gradient(self, middle, full, interval, count=0):
+
+        # calculating gradent step
+        gradient_step = 0.01
+        print(f'gradient is {self.gradient}, count is {count}. middle is {middle}. Gradent step: {gradient_step}Interval is {interval}')
+
+
+
+        # if count is smaller than middle, raise gradient and continue
+        if count <= middle:
+            count += interval
+            self.gradient += gradient_step
+            Clock.schedule_once(lambda dt: self.upgrade_gradient(middle, full, interval, count), interval/100)
+
+        # if count is bigger that middle, lower gradient and continue
+        elif count > middle and count < full:
+            count += interval
+            self.gradient -= gradient_step
+            Clock.schedule_once(lambda dt: self.upgrade_gradient(middle, full, interval, count), interval/100)
+
+        # if count is double as middle, stop iteration
+        elif count >= full:
+            print('ending gradent loop')
+            self.gradient = 0
+            return
 
 
     def callback(self, dt):
@@ -293,7 +315,7 @@ class Workout(Screen):
 
 # TODO: Add Pause button to workout screen
 # TODO: on overview, make poses buttons that open pop-up window. In window, explain pose, have 'start from here' button
-
+# TODO: Add option for user yoga skill: Beginner, Intermediate, Professional (should affect complicated poses)
 
 
 ####################################
