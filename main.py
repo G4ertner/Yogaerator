@@ -248,11 +248,11 @@ class WorkoutOverview(Screen):
 class Workout(Screen):
     breath_count = StringProperty('')
     yoga_pose = StringProperty('')
-    gradient = properties.NumericProperty()
-    count = 0
     bg_color = properties.ObjectProperty([0.137, 0.69, 0.529, 0])
+    pause = False
 
-    def update_pose(self, poses, pose_index=0, breath_index=None):
+    def update_pose(self, poses, pose_index=0, breath_index=None, *args):
+
         if pose_index < len(poses):
             pose = poses[pose_index]
 
@@ -262,63 +262,35 @@ class Workout(Screen):
                 breath_index = pose['breaths']
 
             # Calculate length of breath
-            breath_length = int((pose['seconds'] / pose['breaths'])) #* 100) # convert to integer (hundredths of a second)
+            breath_length = int((pose['seconds'] / pose['breaths']))
             breath_middle = breath_length / 2
-            breath_interval = breath_middle #// 100
+            breath_interval = breath_middle
             print(f'breath no: {breath_index}, breath length in seconds: {breath_length}, breath middle: {breath_middle}, breath interval {breath_interval}')
 
             # Update breaths (counting down)
             self.breath_count = f"{breath_index} breath"
             breath_index -= 1
-            #self.count = 0
-            self.gradient = 0
+
 
             # update gradient
-            #self.upgrade_gradient(breath_middle, breath_length, breath_interval)
-            self.animate_color(breath_middle)
+            self.animate_color(breath_middle, poses, pose_index, breath_index)
 
-            # If all breaths are completed for the current pose, move to the next pose
-            if breath_index < 0:
-                breath_index = None
-                pose_index += 1
 
-            # Schedule the update_pose function to be called after a pause
-            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index), breath_length)#/100)
+    def animate_color(self, duration, poses, pose_index, breath_index, *args):
 
-    def animate_color(self, duration, *args):
-        anim = Animation(bg_color=[0.137, 0.69, 0.529, 1], duration=duration) + Animation(bg_color=[0.137, 0.69, 0.529, 0], duration=duration)
-        #anim.repeat = True
+        # start the animiation
+        anim = Animation(bg_color=[0.137, 0.69, 0.529, 1], t='in_out_quad', duration=duration) + Animation(bg_color=[0.137, 0.69, 0.529, 0], t='in_out_quad', duration=duration)
+
+        # If all breaths are completed for the current pose, move to the next pose
+        if breath_index < 0:
+            breath_index = None
+            pose_index += 1
+
+        # update the breath count / yoga pose when animation is done
+        anim.bind(on_complete=partial(self.update_pose, poses, pose_index, breath_index))
+
         anim.start(self)
 
-    def upgrade_gradient(self, middle, full, interval, count=0):
-
-        # calculating gradent step
-        gradient_step = 0.01
-        print(f'gradient is {self.gradient}, count is {count}. middle is {middle}. Gradent step: {gradient_step}Interval is {interval}')
-
-
-
-        # if count is smaller than middle, raise gradient and continue
-        if count <= middle:
-            count += interval
-            self.gradient += gradient_step
-            Clock.schedule_once(lambda dt: self.upgrade_gradient(middle, full, interval, count), interval/100)
-
-        # if count is bigger that middle, lower gradient and continue
-        elif count > middle and count < full:
-            count += interval
-            self.gradient -= gradient_step
-            Clock.schedule_once(lambda dt: self.upgrade_gradient(middle, full, interval, count), interval/100)
-
-        # if count is double as middle, stop iteration
-        elif count >= full:
-            print('ending gradent loop')
-            self.gradient = 0
-            return
-
-
-    def callback(self, dt):
-        pass
 
 # TODO: Add Pause button to workout screen
 # TODO: on overview, make poses buttons that open pop-up window. In window, explain pose, have 'start from here' button
