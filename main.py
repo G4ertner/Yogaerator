@@ -9,6 +9,7 @@ from functools import partial
 import kivy.properties as properties
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.label import Label
+from kivy.animation import Animation
 from kivy.core.window import Window
 
 # Remember to set your OpenAI API key
@@ -249,6 +250,7 @@ class Workout(Screen):
     yoga_pose = StringProperty('')
     gradient = properties.NumericProperty()
     count = 0
+    bg_color = properties.ObjectProperty([0.137, 0.69, 0.529, 0])
 
     def update_pose(self, poses, pose_index=0, breath_index=None):
         if pose_index < len(poses):
@@ -260,9 +262,9 @@ class Workout(Screen):
                 breath_index = pose['breaths']
 
             # Calculate length of breath
-            breath_length = int((pose['seconds'] / pose['breaths']) * 100) # convert to integer (hundredths of a second)
-            breath_middle = breath_length // 2
-            breath_interval = breath_middle // 100
+            breath_length = int((pose['seconds'] / pose['breaths'])) #* 100) # convert to integer (hundredths of a second)
+            breath_middle = breath_length / 2
+            breath_interval = breath_middle #// 100
             print(f'breath no: {breath_index}, breath length in seconds: {breath_length}, breath middle: {breath_middle}, breath interval {breath_interval}')
 
             # Update breaths (counting down)
@@ -272,7 +274,8 @@ class Workout(Screen):
             self.gradient = 0
 
             # update gradient
-            self.upgrade_gradient(breath_middle, breath_length, breath_interval)
+            #self.upgrade_gradient(breath_middle, breath_length, breath_interval)
+            self.animate_color(breath_middle)
 
             # If all breaths are completed for the current pose, move to the next pose
             if breath_index < 0:
@@ -280,8 +283,12 @@ class Workout(Screen):
                 pose_index += 1
 
             # Schedule the update_pose function to be called after a pause
-            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index), breath_length/100)
+            Clock.schedule_once(lambda dt: self.update_pose(poses, pose_index, breath_index), breath_length)#/100)
 
+    def animate_color(self, duration, *args):
+        anim = Animation(bg_color=[0.137, 0.69, 0.529, 1], duration=duration) + Animation(bg_color=[0.137, 0.69, 0.529, 0], duration=duration)
+        #anim.repeat = True
+        anim.start(self)
 
     def upgrade_gradient(self, middle, full, interval, count=0):
 

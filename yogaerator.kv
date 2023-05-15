@@ -170,8 +170,10 @@
 <Workout>:
 
     canvas.before:
+    #canvas:
         Color:
-            rgba: 0.137, 0.69, 0.529, root.gradient  # You can use any color here
+            #id: bg_color
+            rgba: self.bg_color #0.137, 0.69, 0.529, 0  # You can use any color here
         Rectangle:
             pos: self.pos
             size: self.size
