@@ -10,7 +10,9 @@ import kivy.properties as properties
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.label import Label
 from kivy.animation import Animation
+from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import Window
+from kivy.uix.button import Button
 
 # Remember to set your OpenAI API key
 api_key = openai_key
@@ -214,18 +216,50 @@ class WorkoutOverview(Screen):
 
 
     def build_accordion(self, data):
-        #accordion = Accordion()
-        accordion = Accordion(orientation='vertical',  size_hint_y=None)
 
+        # establish the accordion menu
+        accordion = Accordion(orientation='vertical', size_hint_y=None)
+
+        # add accordion item for each pose
         for item in data:
+            # create accordion item for each pose
             accordion_item = AccordionItem(title=item['pose'])
-            content_label = Label(
-                text=f"Breaths: {item['breaths']}\nSeconds: {item['seconds']}",
-
-            )
-            content_label.height = content_label.texture_size[1] + 20
-            accordion_item.add_widget(content_label)
             accordion.add_widget(accordion_item)
+
+            # create outer box
+            outer_box = BoxLayout(orientation='vertical')
+            accordion_item.add_widget(outer_box)
+
+            # create upper inner box
+            inner_box_1 = BoxLayout(orientation='horizontal')
+            outer_box.add_widget(inner_box_1)
+
+            # add first content label
+            content_label_1 = Label(text=f"Breaths: {item['breaths']}")
+            content_label_1.height = content_label_1.texture_size[1] + 20
+            inner_box_1.add_widget(content_label_1)
+
+            # add second content label
+            content_label_2 = Label(text=f"Seconds: {item['seconds']}")
+            content_label_2.height = content_label_2.texture_size[1] + 20
+            inner_box_1.add_widget(content_label_2)
+
+            # create lower inner box
+            inner_box_2 = BoxLayout(orientation='horizontal')
+            outer_box.add_widget(inner_box_2)
+
+            # add first button 'alternatives'
+            button_1 = Button(text="Alternatives")
+            button_1.size_hint_y = 0.5
+            button_1.size_hint_x = 0.5
+            button_1.padding = (0.5, 0.5)
+            inner_box_2.add_widget(button_1)
+
+            # add second button 'description'
+
+            # add third button 'start from here'
+
+
 
 
         # define the size of the accordionItems
@@ -316,7 +350,6 @@ class Workout(Screen):
             return self.update_pose(self.poses, self.pose_index, self.breath_index)
 
 
-# TODO: Add Pause button to workout screen
 # TODO: on overview, make poses buttons that open pop-up window. In window, explain pose, have 'start from here' button
 # TODO: Add option for user yoga skill: Beginner, Intermediate, Professional (should affect complicated poses)
 
